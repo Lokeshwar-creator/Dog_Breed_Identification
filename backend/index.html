@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1024">
+  <title>Canine ID | Dog Breed Identifier</title>
+  <style>
+    :root { --ink:#f2f4ff; --muted:#aeb8d9; --accent:#846dff; --mint:#3bdfc2; --panel:rgba(20,30,64,.8); --line:rgba(210,218,255,.15); }
+    * { box-sizing:border-box; }
+    body { min-width:320px; min-height:100vh; margin:0; overflow-x:hidden; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:#0b1024; }
+    body:before,body:after { position:fixed; z-index:-1; width:44rem; height:44rem; content:""; border-radius:50%; filter:blur(3px); opacity:.55; }
+    body:before { top:-20rem; left:-20rem; background:radial-gradient(circle,#594bdc,transparent 67%); }
+    body:after { right:-20rem; bottom:-23rem; background:radial-gradient(circle,#087e79,transparent 67%); }
+    .page { width:min(1120px,calc(100% - 40px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:28px 0 20px; }
+    .brand { display:flex; align-items:center; gap:11px; font-size:1.05rem; font-weight:850; }
+    .mark { display:grid; width:38px; height:38px; place-items:center; color:#091126; background:linear-gradient(135deg,var(--mint),#a2f6e5); border-radius:12px; box-shadow:0 8px 24px rgba(59,223,194,.2); }
+    .mark svg { width:22px; }
+    .status { display:flex; align-items:center; gap:8px; color:#c6d0ec; font-size:.81rem; font-weight:700; }
+    .status i { width:8px; height:8px; background:var(--mint); border-radius:50%; box-shadow:0 0 0 5px rgba(59,223,194,.13); }
+    main { padding:43px 0 54px; }
+    .eyebrow { margin:0 0 14px; color:var(--mint); font-size:.73rem; font-weight:850; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { max-width:760px; margin:0; font-size:clamp(2.7rem,7vw,5.5rem); line-height:.98; letter-spacing:-.066em; }
+    .intro { max-width:600px; margin:23px 0 42px; color:var(--muted); font-size:1.1rem; line-height:1.7; }
+    .workspace { display:grid; grid-template-columns:minmax(0,1.18fr) minmax(290px,.82fr); gap:22px; }
+    .card { border:1px solid var(--line); background:var(--panel); border-radius:25px; box-shadow:0 25px 70px rgba(2,7,28,.42); backdrop-filter:blur(18px); }
+    .upload-card,.about-card,.result-card { padding:25px; }
+    .heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    h2 { margin:0; font-size:1.08rem; letter-spacing:-.02em; }
+    .step { color:var(--mint); font-size:.75rem; font-weight:850; letter-spacing:.09em; }
+    .drop-zone { position:relative; display:grid; min-height:295px; place-items:center; overflow:hidden; cursor:pointer; border:1.5px dashed rgba(174,190,255,.44); background:linear-gradient(135deg,rgba(132,109,255,.1),rgba(59,223,194,.06)); border-radius:18px; transition:.2s; }
+    .drop-zone:hover,.drop-zone.dragging { border-color:var(--mint); background:linear-gradient(135deg,rgba(132,109,255,.17),rgba(59,223,194,.13)); transform:scale(1.01); }
+    input[type=file] { position:absolute; width:1px; height:1px; opacity:0; }
+    .placeholder { display:grid; padding:24px; place-items:center; text-align:center; }
+    .upload-icon { display:grid; width:66px; height:66px; margin-bottom:16px; place-items:center; color:#bbc5ff; background:rgba(132,109,255,.18); border-radius:19px; }
+    .upload-icon svg { width:31px; }
+    .placeholder strong { font-size:1.05rem; }
+    .placeholder small { margin-top:7px; color:var(--muted); font-size:.87rem; }
+    .browse { margin-top:16px; padding:9px 14px; color:#fff; font-size:.81rem; font-weight:800; background:rgba(255,255,255,.1); border-radius:9px; }
+    #preview { display:none; width:100%; height:295px; object-fit:cover; }
+    .change { position:absolute; top:13px; right:13px; display:none; padding:8px 11px; cursor:pointer; color:#fff; font:inherit; font-size:.76rem; font-weight:800; background:rgba(8,13,33,.75); border:1px solid rgba(255,255,255,.18); border-radius:8px; }
+    .file-name { display:none; margin:15px 0 0; overflow:hidden; color:#c8d2ed; font-size:.83rem; text-overflow:ellipsis; white-space:nowrap; }
+    .file-name:before { margin-right:8px; color:var(--mint); content:"OK"; font-weight:800; }
+    .submit { display:flex; width:100%; align-items:center; justify-content:center; gap:10px; margin-top:22px; padding:15px; cursor:pointer; color:#fff; font:inherit; font-size:.94rem; font-weight:850; background:linear-gradient(105deg,#7161f5,#a169f4); border:0; border-radius:13px; box-shadow:0 13px 28px rgba(100,81,235,.31); transition:.2s; }
+    .submit:hover { box-shadow:0 16px 36px rgba(100,81,235,.48); transform:translateY(-2px); }
+    .submit:disabled { cursor:not-allowed; opacity:.55; transform:none; }
+    .submit svg { width:18px; }
+    .side { display:grid; gap:22px; }
+    .about-card h2,.result-card h2 { margin-bottom:18px; }
+    .feature { display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--line); }
+    .feature:first-of-type { padding-top:0; border:0; }
+    .feature b { display:block; font-size:.87rem; }
+    .feature p { margin:4px 0 0; color:var(--muted); font-size:.79rem; line-height:1.45; }
+    .feature-icon { display:grid; flex:0 0 auto; width:34px; height:34px; place-items:center; color:var(--mint); background:rgba(59,223,194,.1); border-radius:10px; }
+    .feature-icon svg { width:18px; }
+    .result-card { border-color:rgba(59,223,194,.33); background:linear-gradient(145deg,rgba(24,59,77,.88),rgba(22,31,66,.9)); }
+    .result-label { margin:0 0 7px; color:var(--muted); font-size:.77rem; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+    .breed { margin:0; color:#a8f7e6; font-size:clamp(1.45rem,3vw,2rem); font-weight:850; letter-spacing:-.04em; }
+    .result-image { width:100%; max-height:192px; margin-top:19px; object-fit:cover; border:1px solid rgba(255,255,255,.15); border-radius:14px; }
+    footer { display:flex; justify-content:space-between; gap:15px; padding:16px 0 32px; color:#8995bb; font-size:.75rem; }
+    @media(max-width:760px) { .workspace { grid-template-columns:1fr; } main { padding-top:28px; } }
+    @media(max-width:460px) { .page { width:calc(100% - 28px); } header { padding-top:18px; } .status { font-size:.7rem; } .upload-card,.about-card,.result-card { padding:18px; border-radius:19px; } .drop-zone,#preview { min-height:250px; height:250px; } footer { flex-direction:column; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="2.5"/><circle cx="6.5" cy="12" r="2"/><circle cx="17.5" cy="12" r="2"/><path d="M7.5 19c0-3 2-5 4.5-5s4.5 2 4.5 5c-1.2 1-2.8 1.5-4.5 1.5S8.7 20 7.5 19Z"/></svg></span>Canine ID</div>
+      <span class="status"><i></i> Vision model ready</span>
+    </header>
+    <main>
+      <p class="eyebrow">AI-powered dog breed recognition</p>
+      <h1>Meet the breed behind the bark.</h1>
+      <p class="intro">Upload a clear dog photo and let the trained image classifier identify its most likely breed in seconds.</p>
+      <section class="workspace" aria-label="Dog breed prediction workspace">
+        <form class="card upload-card" action="/predict" method="post" enctype="multipart/form-data" id="prediction-form">
+          <div class="heading"><h2>Upload a photo</h2><span class="step">STEP 01</span></div>
+          <label class="drop-zone" id="drop-zone" for="file-input">
+            <input id="file-input" name="file" type="file" accept="image/jpeg,image/png,image/webp" required>
+            <span class="placeholder" id="placeholder"><span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M5 14.5v3.2A2.3 2.3 0 0 0 7.3 20h9.4a2.3 2.3 0 0 0 2.3-2.3v-3.2"/></svg></span><strong>Drop a dog photo here</strong><small>JPG, PNG, or WEBP - choose a clear, well-lit image</small><span class="browse">Browse files</span></span>
+            <img id="preview" alt="Selected dog image preview">
+            <button class="change" type="button" id="change-image">Change image</button>
+          </label>
+          <p class="file-name" id="file-name"></p>
+          <button class="submit" type="submit" id="submit-button" disabled>Identify this breed <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+        <div class="side">
+           
+          <aside class="card result-card" aria-live="polite"><h2>Your result</h2><p class="result-label">Most likely breed</p><p class="breed"><img class="result-image" src="{{ img_path }}" alt="Uploaded dog image"></aside>
+           
+          <aside class="card about-card"><h2>How it works</h2>
+            <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h3l1.5-2h7L17 7h3v12H4Z"/><circle cx="12" cy="13" r="3.5"/></svg></span><div><b>1. Choose a photo</b><p>Use a close, well-lit photo with the dog clearly visible.</p></div></div>
+            <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/></svg></span><div><b>2. AI analyzes features</b><p>The vision model compares patterns learned from breed images.</p></div></div>
+            <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m5 12 4 4L19 6"/></svg></span><div><b>3. View the prediction</b><p>Receive the breed with the strongest model confidence.</p></div></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <footer><span>Canine ID - Image classification experience</span><span>Built for dog breed recognition</span></footer>
+  </div>
+  <script>
+    const input=document.getElementById('file-input'), zone=document.getElementById('drop-zone'), preview=document.getElementById('preview'), placeholder=document.getElementById('placeholder'), change=document.getElementById('change-image'), name=document.getElementById('file-name'), submit=document.getElementById('submit-button');
+    function displayFile(file) { if (!file || !file.type.startsWith('image/')) return; preview.src=URL.createObjectURL(file); preview.style.display='block'; placeholder.style.display='none'; change.style.display='block'; name.style.display='block'; name.textContent=file.name; submit.disabled=false; }
+    input.addEventListener('change',()=>displayFile(input.files[0]));
+    change.addEventListener('click',(event)=>{ event.preventDefault(); input.click(); });
+    ['dragenter','dragover'].forEach(type=>zone.addEventListener(type,event=>{ event.preventDefault(); zone.classList.add('dragging'); }));
+    ['dragleave','drop'].forEach(type=>zone.addEventListener(type,event=>{ event.preventDefault(); zone.classList.remove('dragging'); }));
+    zone.addEventListener('drop',event=>{ const file=event.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return; const transfer=new DataTransfer(); transfer.items.add(file); input.files=transfer.files; displayFile(file); });
+  </script>
+</body>
+</html>
